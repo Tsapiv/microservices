@@ -1,5 +1,15 @@
-#!/bin/bash
+#python no_locking_map_run.py &
+#python no_locking_map_run.py &
+#python no_locking_map_run.py
 
-python -m uvicorn facade_service.service:app --reload --port 8080 &
-python -m uvicorn logging_service.service:app --reload --port 8081 &
-python -m uvicorn messages_service.service:app --reload --port 8082 &
+#python pessimistic_locking_map_run.py &
+#python pessimistic_locking_map_run.py &
+#python pessimistic_locking_map_run.py
+
+#python optimistic_locking_map_run.py &
+#python optimistic_locking_map_run.py &
+#python optimistic_locking_map_run.py
+
+python queue_producer.py --port 5701 &
+python queue_consumer.py --port 5702 &
+python queue_consumer.py --port 5703
