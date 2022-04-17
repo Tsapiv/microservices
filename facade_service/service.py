@@ -1,13 +1,13 @@
 import uuid
 
 from fastapi import FastAPI, Request
-from logging_service import LoggingClient
+from logging_service import LoggingMultiClient
 from messages_service import MessageClient
 
 app = FastAPI()
 
-logging = LoggingClient(8081)
-messages = MessageClient(8082)
+messages = MessageClient(8081)
+logging = LoggingMultiClient([8082, 8083, 8084])
 
 
 @app.get("/facade-service")

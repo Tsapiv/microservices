@@ -1,5 +1,6 @@
 from typing import Dict
-from httpx import Client, Response
+
+from httpx import Client
 
 
 class LoggingClient:

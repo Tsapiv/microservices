@@ -1,18 +1,30 @@
-from multiprocessing import Manager
+import os
+
+import hazelcast
 from fastapi import FastAPI, Request
 
+hport = os.getenv("hport", "5701")
+
 app = FastAPI()
-manager = Manager()
-hash_map = manager.dict()
+hz = hazelcast.HazelcastClient(cluster_members=[f"localhost:{hport}"], cluster_name="dev")
+hash_map = hz.get_map("logging").blocking()
 
 
 @app.get("/logging")
 async def get():
-    return list(hash_map.values())
+    msg = list(hash_map.values())
+    print(msg)
+    return msg
 
 
 @app.post("/logging")
 async def post(request: Request):
     msg = await request.json()
-    hash_map.update(msg)
+    key, value = list(msg.items())[0]
+    hash_map.put(key, value)
     print(msg)
+
+
+@app.on_event("shutdown")
+def shutdown_event():
+    hz.shutdown()
