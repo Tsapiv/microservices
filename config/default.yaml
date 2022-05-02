@@ -1,0 +1,11 @@
+facade:
+  messages:
+    - [8081, 5701]
+    - [8082, 5702]
+  logging:
+    - 8083
+    - 8084
+    - 8085
+messages:
+  msg_dir: data/
+  mq_name: mq

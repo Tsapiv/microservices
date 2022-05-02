@@ -14,4 +14,7 @@
             </tcp-ip>
         </join>
     </network>
+    <queue name="mq">
+        <max-size>100</max-size>
+    </queue>
 </hazelcast>
