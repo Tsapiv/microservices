@@ -1,20 +1,28 @@
 import os
 import threading
+from argparse import ArgumentParser
 from datetime import datetime
 
 import hazelcast
+import uvicorn
+from consul import Consul
 from fastapi import FastAPI
 
-from utils.config import load_config
-
 app = FastAPI()
+parser = ArgumentParser()
+parser.add_argument('--port', type=int, required=True)
+args = parser.parse_args()
+iid = f'messages{args.port}'
 
-hport = os.getenv("hport", "5701")
-config = load_config(os.getenv("config", "config/default.yaml"))['messages']
+consul = Consul()
+consul.agent.service.register(name=iid, port=args.port)
 
-hz = hazelcast.HazelcastClient(cluster_members=[f"localhost:{hport}"], cluster_name="dev")
-queue = hz.get_queue(config['mq_name']).blocking()
-filename = os.path.join(config['msg_dir'], f"{datetime.now().isoformat()}.txt")
+hz = hazelcast.HazelcastClient(cluster_members=[f"localhost:{hport}" for
+                                                hport in consul.kv.get('mq_ports')[1]['Value'].decode("utf-8").split()],
+                               cluster_name="dev")
+
+queue = hz.get_queue(consul.kv.get('mq_name')[1]['Value'].decode("utf-8")).blocking()
+filename = os.path.join("data", f"{datetime.now().isoformat()}.txt")
 
 
 def save_msg():
@@ -39,3 +47,7 @@ async def get():
 @app.on_event("shutdown")
 def shutdown_event():
     hz.shutdown()
+
+
+if __name__ == '__main__':
+    uvicorn.run("service:app", port=args.port, reload=True)

@@ -1,12 +1,22 @@
-import os
+from argparse import ArgumentParser
 
 import hazelcast
+import uvicorn as uvicorn
+from consul import Consul
 from fastapi import FastAPI, Request
 
-hport = os.getenv("hport", "5701")
-
 app = FastAPI()
-hz = hazelcast.HazelcastClient(cluster_members=[f"localhost:{hport}"], cluster_name="dev")
+parser = ArgumentParser()
+parser.add_argument('--port', type=int, required=True)
+args = parser.parse_args()
+iid = f'logging{args.port}'
+
+consul = Consul()
+consul.agent.service.register(name=iid, port=args.port)
+
+hz = hazelcast.HazelcastClient(cluster_members=[f"localhost:{hport}" for
+                                                hport in consul.kv.get('map_ports')[1]['Value'].decode("utf-8").split()],
+                               cluster_name="dev")
 hash_map = hz.get_map("logging").blocking()
 
 
@@ -28,3 +38,8 @@ async def post(request: Request):
 @app.on_event("shutdown")
 def shutdown_event():
     hz.shutdown()
+    consul.agent.service.deregister(iid)
+
+
+if __name__ == '__main__':
+    uvicorn.run("service:app", port=args.port, reload=True)
