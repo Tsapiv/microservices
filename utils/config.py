@@ -10,7 +10,7 @@
 
 def get_ports(consul):
     res = {'logging': [], 'messages': []}
-    for key, value in consul.agent.services():
+    for key, value in consul.agent.services().items():
         if key.startswith('logging'):
             res['logging'].append(value['Port'])
         elif key.startswith('messages'):

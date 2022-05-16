@@ -16,10 +16,14 @@ app = FastAPI()
 parser = ArgumentParser()
 parser.add_argument('--port', type=int, required=True)
 args = parser.parse_args()
+iid = f'facade{args.port}'
+
 consul = Consul()
+consul.agent.service.register(name=iid, port=args.port)
 mq_ports = consul.kv.get('mq_ports')[1]['Value'].decode("utf-8").split()
-mq_name = consul.kv.get('mq_name')[1]['Value'].decode("utf-8").split()
+mq_name = consul.kv.get('mq_name')[1]['Value'].decode("utf-8")
 ports = get_ports(consul)
+
 messages = MessageMultiClient(ports["messages"], mq_ports, mq_name)
 logging = LoggingMultiClient(ports["logging"])
 

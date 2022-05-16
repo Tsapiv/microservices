@@ -1,12 +1,12 @@
 # Test your FastAPI endpoints
 
-GET http://127.0.0.1:8086/facade-service
+GET http://127.0.0.1:8081/facade-service
 Accept: application/json
 
 ###
 
-POST http://127.0.0.1:8086/facade-service
+POST http://127.0.0.1:8081/facade-service
 Content-Type: text/plain
 
-msg1
+msg10
 ###

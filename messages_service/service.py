@@ -40,8 +40,11 @@ async def app_startup():
 
 @app.get("/messages")
 async def get():
-    with open(filename, 'r') as f:
-        return list(map(lambda x: x.strip(), f.readlines()))
+    try:
+        with open(filename, 'r') as f:
+            return list(map(lambda x: x.strip(), f.readlines()))
+    except FileNotFoundError:
+        return []
 
 
 @app.on_event("shutdown")
